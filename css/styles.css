@@ -1,0 +1,911 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 50%, #16213e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+#gameCanvas {
+    border: 4px solid #ff4444;
+    border-radius: 4px;
+    box-shadow: 
+        0 0 30px rgba(255, 68, 68, 0.4),
+        0 0 60px rgba(255, 68, 68, 0.2),
+        inset 0 0 60px rgba(0, 0, 0, 0.5);
+}
+
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Countdown styles */
+#countdown {
+    font-size: 140px;
+    font-weight: 900;
+    text-shadow: 
+        0 0 30px rgba(255, 255, 255, 0.8),
+        0 0 60px rgba(78, 205, 196, 0.5);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.15s, transform 0.15s;
+    color: #fff;
+}
+
+#countdown.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+#countdown.go {
+    color: #4ecdc4;
+    text-shadow: 
+        0 0 30px rgba(78, 205, 196, 0.8),
+        0 0 60px rgba(78, 205, 196, 0.5);
+}
+
+@keyframes countdownPop {
+    0% { transform: scale(1.5); opacity: 0; }
+    50% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes goPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Winner announcement styles */
+#winner-announcement {
+    position: absolute;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+#winner-announcement.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#winner-announcement .title-text {
+    font-size: 72px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #ffe66d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    margin-bottom: 10px;
+}
+
+#winner-announcement .subtitle {
+    font-size: 24px;
+    color: #aaa;
+    margin-bottom: 30px;
+}
+
+#winner-announcement .start-hint {
+    font-size: 20px;
+    color: #4ecdc4;
+    animation: pulse 2s infinite;
+}
+
+#winner-announcement .round-win-text {
+    font-size: 24px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+#winner-announcement .winner-name {
+    font-size: 48px;
+    font-weight: bold;
+    text-shadow: 0 0 20px currentColor;
+}
+
+#winner-announcement .trophy {
+    font-size: 80px;
+    animation: bounce 1s infinite;
+}
+
+#winner-announcement .match-winner {
+    font-size: 64px;
+    font-weight: 900;
+    text-shadow: 0 0 30px currentColor;
+}
+
+#winner-announcement .wins-text {
+    font-size: 32px;
+    color: #ffe66d;
+    margin: 10px 0;
+}
+
+#winner-announcement .restart-hint {
+    font-size: 18px;
+    color: #888;
+    margin-top: 20px;
+    animation: pulse 2s infinite;
+}
+
+/* How to join section in waiting screen */
+#winner-announcement .how-to-join {
+    font-size: 16px;
+    color: #aaa;
+    margin: 20px 0 10px;
+    padding: 10px 20px;
+    background: rgba(78, 205, 196, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+#winner-announcement .how-to-join .join-label {
+    color: #ff6b6b;
+    font-weight: 700;
+}
+
+#winner-announcement .how-to-join .gamepad-hint {
+    color: #4ecdc4;
+    font-size: 14px;
+}
+
+/* Key inline style for start hint */
+.key-inline {
+    display: inline-block;
+    background: rgba(255, 68, 68, 0.3);
+    border: 2px solid #ff6b6b;
+    border-radius: 4px;
+    padding: 2px 12px;
+    font-weight: 900;
+    color: #ff6b6b;
+    margin: 0 4px;
+}
+
+.key-inline.gamepad-inline {
+    background: rgba(78, 205, 196, 0.3);
+    border-color: #4ecdc4;
+    color: #4ecdc4;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Match info */
+#match-info {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    z-index: 10;
+}
+
+#match-goal {
+    color: #ffe66d;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Bottom HUD with Join Section and Scoreboard */
+#hud-bottom {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-top: 10px;
+    pointer-events: auto;
+}
+
+/* Gamepad status indicator */
+#gamepad-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 12px;
+    color: #888;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+    text-align: center;
+    line-height: 1.4;
+}
+
+#gamepad-status.connected {
+    color: #4ecdc4;
+    border-color: rgba(78, 205, 196, 0.3);
+}
+
+#gamepad-status .gamepad-icon {
+    margin-right: 5px;
+}
+
+/* Join Section - unified controls and player select - ALWAYS VISIBLE */
+#join-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(20, 0, 0, 0.7) 100%);
+    border-radius: 4px;
+    border: 2px solid rgba(255, 68, 68, 0.4);
+    pointer-events: all;
+}
+
+.join-header {
+    font-size: 14px;
+    font-weight: 800;
+    color: #ff6b6b;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+#player-slots {
+    display: flex;
+    gap: 12px;
+}
+
+.player-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.player-slot.hidden {
+    display: none;
+}
+
+.slot-badge {
+    font-size: 16px;
+    font-weight: 900;
+    padding: 4px 12px;
+    border-radius: 2px;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.slot-badge.player1-badge { background: linear-gradient(135deg, #ff6b6b, #cc4444); }
+.slot-badge.player2-badge { background: linear-gradient(135deg, #4ecdc4, #35a89e); }
+.slot-badge.player3-badge { background: linear-gradient(135deg, #ffe66d, #ccb84d); color: #333; }
+.slot-badge.player4-badge { background: linear-gradient(135deg, #95e1d3, #6bb8a8); color: #333; }
+
+.slot-controls {
+    font-size: 11px;
+    color: #ccc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.control-row.gamepad-only {
+    margin-bottom: 4px;
+}
+
+.control-label {
+    font-size: 9px;
+    color: #888;
+    min-width: 32px;
+    text-align: right;
+}
+
+.control-or {
+    font-size: 9px;
+    color: #4ecdc4;
+    margin-top: 2px;
+}
+
+.key-group {
+    display: flex;
+    gap: 2px;
+}
+
+.slot-controls .key {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 3px 6px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.slot-controls .dash-key {
+    background: rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+    border-color: rgba(255, 107, 107, 0.5);
+    font-size: 9px;
+}
+
+.slot-controls .gamepad-key {
+    background: rgba(78, 205, 196, 0.2);
+    border-color: rgba(78, 205, 196, 0.4);
+    color: #4ecdc4;
+}
+
+.player-count-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select-label {
+    color: #888;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.player-btn {
+    background: rgba(255, 68, 68, 0.2);
+    border: 2px solid rgba(255, 68, 68, 0.4);
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.player-btn:hover {
+    background: rgba(255, 68, 68, 0.4);
+    border-color: #ff6b6b;
+    transform: scale(1.1);
+}
+
+.player-btn.active {
+    background: rgba(255, 68, 68, 0.5);
+    border-color: #ff6b6b;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.6);
+}
+
+/* Gamepad help text */
+.gamepad-help {
+    font-size: 10px;
+    color: #4ecdc4;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(78, 205, 196, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(78, 205, 196, 0.2);
+}
+
+/* Game rules on start screen */
+.game-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 30px 0;
+    padding: 20px 40px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 20px;
+}
+
+.rule-icon {
+    font-size: 28px;
+}
+
+.rule-text {
+    color: #ddd;
+}
+
+/* How to join section in welcome screen */
+.how-to-join {
+    margin: 20px 0;
+    padding: 15px 25px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+.join-info-header {
+    font-size: 16px;
+    font-weight: 800;
+    color: #4ecdc4;
+    margin-bottom: 12px;
+}
+
+.join-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+}
+
+.join-item {
+    font-size: 14px;
+    color: #ccc;
+}
+
+.join-item em {
+    color: #888;
+    font-style: normal;
+}
+
+.player-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 800;
+    font-size: 12px;
+    margin-right: 6px;
+}
+
+.player-badge.p1 { background: #ff6b6b; }
+.player-badge.p2 { background: #4ecdc4; }
+.player-badge.p3 { background: #ffe66d; color: #333; }
+.player-badge.p4 { background: #95e1d3; color: #333; }
+
+.join-note {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+}
+
+/* Progress text after rounds */
+.progress-text {
+    font-size: 20px;
+    color: #aaa;
+    margin-top: 15px;
+}
+
+.progress-text.match-point {
+    color: #ffe66d;
+    font-weight: bold;
+    font-size: 24px;
+    animation: pulse 0.5s ease-in-out infinite;
+}
+
+/* Scoreboard styles */
+#scoreboard {
+    display: flex;
+    gap: 15px;
+    padding: 12px 20px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 0, 0, 0.6) 100%);
+    border-radius: 4px;
+    border: 2px solid rgba(255, 68, 68, 0.3);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+}
+
+.player-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.player-score:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.player-indicator {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    color: #fff;
+    box-shadow: 0 0 15px currentColor;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.player-score .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+.player-score .wins {
+    display: flex;
+    gap: 6px;
+}
+
+.player-score .win-pip {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: transparent;
+    transition: all 0.3s ease;
+    box-shadow: none;
+}
+
+.player-score .win-pip.filled {
+    box-shadow: 0 0 10px currentColor;
+}
+
+@keyframes pipFill {
+    0% { transform: scale(0.5); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.player-score.eliminated {
+    opacity: 0.4;
+}
+
+.player-score.eliminated .name {
+    text-decoration: line-through;
+}
+
+.player-score.eliminated .player-indicator {
+    filter: grayscale(70%);
+}
+
+/* Round indicator */
+#round-indicator {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: #aaa;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+#round-indicator.visible {
+    opacity: 1;
+}
+
+/* Cooldown indicator */
+.cooldown-indicator {
+    position: absolute;
+    width: 30px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.cooldown-indicator .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+    transition: width 0.1s linear;
+}
+
+/* Alive counter during round */
+#alive-counter {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+#alive-counter.visible {
+    opacity: 1;
+}
+
+#alive-counter .count {
+    color: #4ecdc4;
+    font-size: 24px;
+}
+
+#alive-counter.danger .count {
+    color: #ff6b6b;
+    animation: dangerPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes dangerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Floating text container */
+#floating-texts {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.floating-text {
+    position: absolute;
+    font-weight: 900;
+    text-shadow: 
+        0 0 10px currentColor,
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+    animation: floatUp 1s ease-out forwards;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.floating-text.dash {
+    font-size: 28px;
+    color: #4ecdc4;
+}
+
+.floating-text.hit {
+    font-size: 32px;
+    color: #ff6b6b;
+}
+
+.floating-text.eliminated {
+    font-size: 36px;
+    color: #ff4444;
+    animation: eliminatedFloat 1.5s ease-out forwards;
+}
+
+.floating-text.survivor {
+    font-size: 42px;
+    color: #4ecdc4;
+    animation: survivorPop 1s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1.2); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateY(-60px) scale(0.8); 
+    }
+}
+
+@keyframes eliminatedFloat {
+    0% { 
+        opacity: 1; 
+        transform: translateY(0) scale(0.5) rotate(-10deg); 
+    }
+    20% {
+        transform: translateY(-10px) scale(1.3) rotate(5deg);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateY(-100px) scale(0.6) rotate(-5deg); 
+    }
+}
+
+@keyframes survivorPop {
+    0% { 
+        opacity: 0; 
+        transform: scale(0); 
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.3);
+    }
+    100% { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+}
+
+/* Enhanced round end styles */
+#winner-announcement .last-survivor {
+    font-size: 20px;
+    color: #888;
+    margin-top: 5px;
+}
+
+#winner-announcement .elimination-reason {
+    font-size: 16px;
+    color: #666;
+    font-style: italic;
+    margin-top: 10px;
+}
+
+#winner-announcement .draw-explanation {
+    font-size: 18px;
+    color: #ff6b6b;
+    margin-top: 10px;
+}
+
+#winner-announcement .next-round-hint {
+    font-size: 14px;
+    color: #888;
+    margin-top: 15px;
+    animation: pulse 1.5s infinite;
+}
+
+/* Modifier announcement */
+.modifier-announcement {
+    position: fixed;
+    text-align: center;
+    transform: translateX(-50%);
+    animation: modifierSlide 2.5s ease-out forwards;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.modifier-announcement .modifier-icon {
+    font-size: 64px;
+    animation: iconBounce 0.5s ease-out;
+}
+
+.modifier-announcement .modifier-name {
+    font-size: 32px;
+    font-weight: 900;
+    color: #ffe66d;
+    text-shadow: 0 0 20px rgba(255, 230, 109, 0.8);
+    margin: 10px 0 5px;
+}
+
+.modifier-announcement .modifier-desc {
+    font-size: 18px;
+    color: #fff;
+    opacity: 0.9;
+}
+
+@keyframes modifierSlide {
+    0% { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(-30px) scale(0.8); 
+    }
+    15% { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0) scale(1.1); 
+    }
+    25% { 
+        transform: translateX(-50%) translateY(0) scale(1); 
+    }
+    85% { 
+        opacity: 1; 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(-20px); 
+    }
+}
+
+@keyframes iconBounce {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+/* Escalation warning */
+.escalation-warning {
+    position: fixed;
+    text-align: center;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: 800;
+    color: #ff4444;
+    text-shadow: 0 0 20px rgba(255, 68, 68, 0.8);
+    animation: warningPulse 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.escalation-warning .warning-icon {
+    margin-right: 10px;
+}
+
+@keyframes warningPulse {
+    0% { 
+        opacity: 0; 
+        transform: translateX(-50%) scale(0.8); 
+    }
+    10% { 
+        opacity: 1; 
+        transform: translateX(-50%) scale(1.1); 
+    }
+    20%, 80% { 
+        opacity: 1; 
+        transform: translateX(-50%) scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+    }
+}
+
+/* Final countdown */
+.final-countdown {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 500;
+}
+
+.final-countdown.visible {
+    opacity: 1;
+}
+
+.final-countdown .final-text {
+    font-size: 56px;
+    font-weight: 900;
+    color: #ff4444;
+    text-shadow: 
+        0 0 30px rgba(255, 68, 68, 0.9),
+        0 0 60px rgba(255, 68, 68, 0.5);
+    animation: finalPulse 0.5s ease-in-out infinite;
+}
+
+.final-countdown .final-subtext {
+    font-size: 20px;
+    color: #ffaaaa;
+    margin-top: 10px;
+}
+
+@keyframes finalPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}

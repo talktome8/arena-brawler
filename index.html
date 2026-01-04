@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Brawler - Local Multiplayer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23ff6b6b'/></svg>">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-overlay">
+            <div id="countdown"></div>
+            <div id="winner-announcement"></div>
+            <div id="alive-counter"></div>
+            <div id="floating-texts"></div>
+        </div>
+        <div id="gamepad-status"></div>
+        <div id="hud-bottom">
+            <div id="join-section">
+                <div class="join-header">⚔ CONTROLS ⚔</div>
+                <div id="player-slots">
+                    <div class="player-slot" data-player="1">
+                        <div class="slot-badge player1-badge">P1</div>
+                        <div class="slot-controls">
+                            <div class="control-row">
+                                <span class="control-label">Move:</span>
+                                <span class="key-group"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></span>
+                            </div>
+                            <div class="control-row">
+                                <span class="control-label">Dash:</span>
+                                <span class="key dash-key">Shift</span>
+                            </div>
+                            <div class="control-or">or 🎮 Gamepad</div>
+                        </div>
+                    </div>
+                    <div class="player-slot" data-player="2">
+                        <div class="slot-badge player2-badge">P2</div>
+                        <div class="slot-controls">
+                            <div class="control-row">
+                                <span class="control-label">Move:</span>
+                                <span class="key-group"><span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span></span>
+                            </div>
+                            <div class="control-row">
+                                <span class="control-label">Dash:</span>
+                                <span class="key dash-key">Ctrl</span>
+                            </div>
+                            <div class="control-or">or 🎮 Gamepad</div>
+                        </div>
+                    </div>
+                    <div class="player-slot hidden" data-player="3">
+                        <div class="slot-badge player3-badge">P3</div>
+                        <div class="slot-controls">
+                            <div class="control-row">
+                                <span class="control-label">Move:</span>
+                                <span class="key-group"><span class="key">I</span><span class="key">J</span><span class="key">K</span><span class="key">L</span></span>
+                            </div>
+                            <div class="control-row">
+                                <span class="control-label">Dash:</span>
+                                <span class="key dash-key">H</span>
+                            </div>
+                            <div class="control-or">or 🎮 Gamepad</div>
+                        </div>
+                    </div>
+                    <div class="player-slot hidden" data-player="4">
+                        <div class="slot-badge player4-badge">P4</div>
+                        <div class="slot-controls">
+                            <div class="control-row gamepad-only">
+                                <span class="key gamepad-key">🎮 GAMEPAD ONLY</span>
+                            </div>
+                            <div class="control-row">
+                                <span class="control-label">Move:</span>
+                                <span class="key">Left Stick</span>
+                            </div>
+                            <div class="control-row">
+                                <span class="control-label">Dash:</span>
+                                <span class="key dash-key">B / ◯</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-count-select">
+                    <span class="select-label">Players:</span>
+                    <button class="player-btn" data-count="2">2</button>
+                    <button class="player-btn" data-count="3">3</button>
+                    <button class="player-btn" data-count="4">4</button>
+                </div>
+                <div class="gamepad-help">
+                    🎮 <strong>Gamepad:</strong> Left Stick = Move, B/◯ = Dash, A/✕ = Start
+                </div>
+            </div>
+            <div id="scoreboard"></div>
+        </div>
+    </div>
+    
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
