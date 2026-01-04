@@ -291,23 +291,9 @@ export class UI {
                     <span class="rule-text">Arena shrinks! <strong>25s MAX</strong> per round</span>
                 </div>
                 <div class="rule-item">
-                    <span class="rule-icon">🎲</span>
-                    <span class="rule-text"><strong>MODIFIERS</strong> add variety each round!</span>
-                </div>
-                <div class="rule-item">
-                    <span class="rule-icon">🏆</span>
+                    <span class="rule-icon">�</span>
                     <span class="rule-text"><strong>First to 3 wins</strong> takes the match</span>
                 </div>
-            </div>
-            <div class="how-to-join">
-                <div class="join-info-header">👥 HOW TO JOIN</div>
-                <div class="join-grid">
-                    <div class="join-item"><span class="player-badge p1">P1</span> WASD + Shift <em>or</em> 🎮 Gamepad 1</div>
-                    <div class="join-item"><span class="player-badge p2">P2</span> Arrows + Ctrl <em>or</em> 🎮 Gamepad 2</div>
-                    <div class="join-item"><span class="player-badge p3">P3</span> IJKL + H <em>or</em> 🎮 Gamepad 3</div>
-                    <div class="join-item"><span class="player-badge p4">P4</span> 🎮 Gamepad 4 Only</div>
-                </div>
-                <div class="join-note">All players can use keyboard OR gamepad! Select player count below.</div>
             </div>
             <div class="start-hint">Press <span class="key-inline">SPACE</span> or <span class="key-inline gamepad-inline">🎮 A</span> to FIGHT!</div>
         `;
