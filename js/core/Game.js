@@ -16,9 +16,13 @@ export class Game {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         
-        // Set canvas size
-        canvas.width = CONFIG.CANVAS_WIDTH;
-        canvas.height = CONFIG.CANVAS_HEIGHT;
+        // Store base dimensions for scaling
+        this.baseWidth = CONFIG.CANVAS_WIDTH;
+        this.baseHeight = CONFIG.CANVAS_HEIGHT;
+        this.scale = 1;
+        
+        // Set canvas size (responsive)
+        this.resizeCanvas();
         
         // Initialize systems
         this.input = new InputManager();
@@ -28,7 +32,7 @@ export class Game {
         this.screenEffects = new ScreenEffects();
         
         // Initialize arena
-        this.arena = new Arena(canvas.width, canvas.height);
+        this.arena = new Arena(this.baseWidth, this.baseHeight);
         
         // Initialize players
         this.playerCount = 2; // Default to 2 players
@@ -48,7 +52,10 @@ export class Game {
         
         // Set canvas rect for UI positioning
         this.updateCanvasRect();
-        window.addEventListener('resize', () => this.updateCanvasRect());
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+            this.updateCanvasRect();
+        });
         
         // Show waiting message
         this.ui.showWaitingMessage();
@@ -59,6 +66,26 @@ export class Game {
         // Start game loop
         this.gameLoop = this.gameLoop.bind(this);
         requestAnimationFrame(this.gameLoop);
+    }
+    
+    /**
+     * Resize canvas to fit screen while maintaining aspect ratio
+     */
+    resizeCanvas() {
+        const maxWidth = Math.min(window.innerWidth - 20, this.baseWidth);
+        const maxHeight = Math.min(window.innerHeight - 250, this.baseHeight); // Leave room for HUD
+        
+        const scaleX = maxWidth / this.baseWidth;
+        const scaleY = maxHeight / this.baseHeight;
+        this.scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 1
+        
+        // Keep internal resolution at base size for consistent gameplay
+        this.canvas.width = this.baseWidth;
+        this.canvas.height = this.baseHeight;
+        
+        // Scale the canvas element visually
+        this.canvas.style.width = `${this.baseWidth * this.scale}px`;
+        this.canvas.style.height = `${this.baseHeight * this.scale}px`;
     }
     
     /**
@@ -309,6 +336,36 @@ export class Game {
     }
     
     /**
+     * Check touch start button
+     */
+    checkTouchStart() {
+        if (!this.roundManager.isWaiting() && !this.roundManager.isMatchOver()) return;
+        
+        if (this.input.getTouchStart()) {
+            this.startNewMatch();
+        }
+    }
+    
+    /**
+     * Update touch controls visibility based on game state
+     */
+    updateTouchControls() {
+        if (!this.input.isTouchDevice()) return;
+        
+        if (this.roundManager.isWaiting() || this.roundManager.isMatchOver()) {
+            this.input.disableTouchControls();
+            this.input.showTouchStartButton();
+        } else if (this.roundManager.isPlaying()) {
+            this.input.enableTouchControls();
+            this.input.hideTouchStartButton();
+        } else {
+            // Countdown or other states
+            this.input.disableTouchControls();
+            this.input.hideTouchStartButton();
+        }
+    }
+    
+    /**
      * Main game loop
      */
     gameLoop(currentTime) {
@@ -321,6 +378,12 @@ export class Game {
         
         // Check gamepad start button
         this.checkGamepadStart();
+        
+        // Check touch start button
+        this.checkTouchStart();
+        
+        // Update touch controls visibility
+        this.updateTouchControls();
         
         // Update screen effects
         this.screenEffects.update(deltaTime);

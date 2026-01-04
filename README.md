@@ -54,6 +54,14 @@ All players can use gamepads:
 - **Dash:** `B` (Xbox) / `◯` (PlayStation)
 - **Start Game:** `A` (Xbox) / `✕` (PlayStation)
 
+### 📱 Mobile/Touch Controls
+On touch devices, Player 1 uses:
+- **Move:** Virtual joystick (left side)
+- **Dash:** Dash button (right side)
+- **Start:** Tap the start button
+
+For the best mobile experience, rotate your device to landscape mode.
+
 ## 🏆 Win Condition
 
 - Knock other players out of the arena by pushing them off the edge
@@ -61,6 +69,18 @@ All players can use gamepads:
 - The last player remaining in the arena wins the round
 - Win the most rounds to become the champion!
 
+## ⚡ Escalation System
+
+Rounds have built-in escalation to prevent stalemates:
+- **8 seconds:** Damage multiplier starts increasing
+- **12 seconds:** Chaos mode - random instability forces
+- **20 seconds:** Final countdown begins
+- **25 seconds:** Forced resolution - closest to center wins!
+
 ## 🌐 Deployment
 
-This project is configured for static deployment on Vercel. Simply connect your repository to Vercel and deploy!
+This project is configured for static deployment on:
+- **Vercel** - Simply connect your repository and deploy
+- **Cloudflare Pages** - Connect your repo, set build output to `/` (root)
+
+No build step required - it's a static site!

@@ -909,3 +909,496 @@ body {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
 }
+
+/* ========================================
+   RESPONSIVE STYLES
+   ======================================== */
+
+/* Make canvas responsive */
+#gameCanvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Tablet styles */
+@media screen and (max-width: 1100px) {
+    #game-container {
+        padding: 10px;
+        width: 100%;
+    }
+    
+    #hud-bottom {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    #join-section {
+        width: 100%;
+        max-width: 600px;
+    }
+    
+    #scoreboard {
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+/* Mobile landscape and small tablets */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 5px;
+    }
+    
+    #game-container {
+        gap: 10px;
+    }
+    
+    #gameCanvas {
+        border-width: 2px;
+    }
+    
+    #player-slots {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .player-slot {
+        padding: 6px 10px;
+    }
+    
+    .slot-badge {
+        font-size: 14px;
+        padding: 3px 8px;
+    }
+    
+    .slot-controls {
+        font-size: 10px;
+    }
+    
+    .slot-controls .key {
+        padding: 2px 4px;
+        font-size: 9px;
+    }
+    
+    .player-count-select {
+        gap: 6px;
+    }
+    
+    .player-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .gamepad-help {
+        font-size: 9px;
+        padding: 4px 8px;
+    }
+    
+    #scoreboard {
+        padding: 8px 12px;
+        gap: 8px;
+    }
+    
+    .player-score {
+        padding: 6px 10px;
+        gap: 8px;
+    }
+    
+    .player-indicator {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+    
+    .player-score .name {
+        font-size: 12px;
+    }
+    
+    .player-score .win-pip {
+        width: 10px;
+        height: 10px;
+    }
+    
+    #countdown {
+        font-size: 80px;
+    }
+    
+    #winner-announcement .title-text {
+        font-size: 42px;
+    }
+    
+    #winner-announcement .subtitle {
+        font-size: 16px;
+    }
+    
+    #winner-announcement .winner-name {
+        font-size: 32px;
+    }
+    
+    #winner-announcement .trophy {
+        font-size: 50px;
+    }
+    
+    #winner-announcement .match-winner {
+        font-size: 40px;
+    }
+    
+    #winner-announcement .wins-text {
+        font-size: 20px;
+    }
+    
+    .modifier-announcement .modifier-icon {
+        font-size: 40px;
+    }
+    
+    .modifier-announcement .modifier-name {
+        font-size: 22px;
+    }
+    
+    .modifier-announcement .modifier-desc {
+        font-size: 14px;
+    }
+    
+    .final-countdown .final-text {
+        font-size: 36px;
+    }
+    
+    .final-countdown .final-subtext {
+        font-size: 14px;
+    }
+    
+    #gamepad-status {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+}
+
+/* Mobile portrait */
+@media screen and (max-width: 480px) {
+    #game-container {
+        gap: 5px;
+    }
+    
+    .join-header {
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+    
+    #player-slots {
+        gap: 6px;
+    }
+    
+    .player-slot {
+        padding: 4px 6px;
+    }
+    
+    .slot-badge {
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+    
+    .control-row {
+        display: none;
+    }
+    
+    .control-or {
+        display: none;
+    }
+    
+    #scoreboard {
+        padding: 6px 8px;
+        gap: 5px;
+    }
+    
+    .player-score {
+        padding: 4px 8px;
+        gap: 5px;
+    }
+    
+    .player-indicator {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .player-info {
+        gap: 2px;
+    }
+    
+    .player-score .name {
+        font-size: 10px;
+    }
+    
+    .player-score .win-pip {
+        width: 8px;
+        height: 8px;
+    }
+    
+    #countdown {
+        font-size: 60px;
+    }
+    
+    #winner-announcement .title-text {
+        font-size: 28px;
+    }
+    
+    #winner-announcement .subtitle {
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+    
+    #winner-announcement .start-hint {
+        font-size: 14px;
+    }
+    
+    #winner-announcement .winner-name {
+        font-size: 24px;
+    }
+    
+    #winner-announcement .trophy {
+        font-size: 36px;
+    }
+    
+    #winner-announcement .match-winner {
+        font-size: 28px;
+    }
+    
+    #winner-announcement .wins-text {
+        font-size: 16px;
+    }
+    
+    #winner-announcement .restart-hint {
+        font-size: 12px;
+    }
+    
+    .modifier-announcement .modifier-icon {
+        font-size: 32px;
+    }
+    
+    .modifier-announcement .modifier-name {
+        font-size: 18px;
+    }
+    
+    .modifier-announcement .modifier-desc {
+        font-size: 12px;
+    }
+    
+    #alive-counter {
+        font-size: 14px;
+        top: 40px;
+    }
+    
+    #alive-counter .count {
+        font-size: 18px;
+    }
+    
+    .final-countdown .final-text {
+        font-size: 28px;
+    }
+    
+    .final-countdown .final-subtext {
+        font-size: 12px;
+    }
+    
+    .floating-text.dash {
+        font-size: 20px;
+    }
+    
+    .floating-text.hit {
+        font-size: 24px;
+    }
+    
+    .floating-text.eliminated {
+        font-size: 26px;
+    }
+    
+    .floating-text.survivor {
+        font-size: 30px;
+    }
+    
+    #gamepad-status {
+        top: 5px;
+        right: 5px;
+        font-size: 8px;
+        padding: 3px 6px;
+    }
+}
+
+/* Touch controls overlay for mobile */
+#touch-controls {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+#touch-controls.active {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.touch-joystick {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    position: relative;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.touch-joystick-inner {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 107, 107, 0.6);
+    border: 2px solid rgba(255, 107, 107, 0.8);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: none;
+}
+
+.touch-dash-btn {
+    width: 80px;
+    height: 80px;
+    background: rgba(78, 205, 196, 0.3);
+    border: 3px solid rgba(78, 205, 196, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #4ecdc4;
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+}
+
+.touch-dash-btn:active {
+    background: rgba(78, 205, 196, 0.6);
+    transform: scale(0.95);
+}
+
+.touch-start-btn {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 40px;
+    background: rgba(255, 107, 107, 0.3);
+    border: 3px solid rgba(255, 107, 107, 0.6);
+    border-radius: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff6b6b;
+    pointer-events: auto;
+    touch-action: none;
+    display: none;
+    z-index: 1001;
+}
+
+.touch-start-btn.visible {
+    display: block;
+    animation: pulse 2s infinite;
+}
+
+/* Landscape mode hint */
+.landscape-hint {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+}
+
+.landscape-hint .rotate-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    animation: rotateHint 2s ease-in-out infinite;
+}
+
+.landscape-hint p {
+    font-size: 18px;
+    color: #aaa;
+}
+
+@keyframes rotateHint {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-20deg); }
+    75% { transform: rotate(20deg); }
+}
+
+/* Show landscape hint on portrait mobile */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    .landscape-hint {
+        display: flex;
+    }
+}
+
+/* Hide landscape hint if user dismisses it */
+.landscape-hint.dismissed {
+    display: none;
+}
+
+/* Small height screens (landscape mobile) */
+@media screen and (max-height: 500px) {
+    #hud-bottom {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    #join-section {
+        padding: 6px 10px;
+    }
+    
+    .join-header {
+        font-size: 10px;
+    }
+    
+    .player-slot {
+        padding: 4px 6px;
+    }
+    
+    .control-row {
+        display: none;
+    }
+    
+    .control-or {
+        display: none;
+    }
+    
+    .gamepad-help {
+        display: none;
+    }
+    
+    #scoreboard {
+        padding: 6px 10px;
+    }
+    
+    .player-score {
+        padding: 4px 6px;
+    }
+}

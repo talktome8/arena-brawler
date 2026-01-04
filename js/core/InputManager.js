@@ -1,8 +1,9 @@
 import { CONFIG } from '../config.js';
 import { Vector2 } from '../utils/Vector2.js';
+import { TouchControls } from './TouchControls.js';
 
 /**
- * Handles all input: keyboard and gamepad
+ * Handles all input: keyboard, gamepad, and touch
  */
 export class InputManager {
     constructor() {
@@ -10,6 +11,9 @@ export class InputManager {
         this.keyJustPressed = new Set();
         this.gamepads = new Map();
         this.previousGamepadButtons = new Map();
+        
+        // Touch controls for mobile
+        this.touch = new TouchControls();
         
         this.setupKeyboardListeners();
         this.setupGamepadListeners();
@@ -200,7 +204,7 @@ export class InputManager {
     }
     
     /**
-     * Get combined input for a player (keyboard + gamepad)
+     * Get combined input for a player (keyboard + gamepad + touch)
      */
     getPlayerInput(playerIndex) {
         // Try keyboard first
@@ -220,7 +224,63 @@ export class InputManager {
             dash = true;
         }
         
+        // Touch controls only affect player 1 (index 0)
+        if (playerIndex === 0 && this.touch.isTouch()) {
+            const touchMovement = this.touch.getMovement();
+            const touchDash = this.touch.getDash();
+            
+            if (touchMovement.magnitude() > 0) {
+                movement = touchMovement;
+            }
+            
+            if (touchDash) {
+                dash = true;
+            }
+        }
+        
         return { movement, dash };
+    }
+    
+    /**
+     * Check if start was pressed via touch
+     */
+    getTouchStart() {
+        return this.touch.getStart();
+    }
+    
+    /**
+     * Enable touch controls
+     */
+    enableTouchControls() {
+        this.touch.enable();
+    }
+    
+    /**
+     * Disable touch controls
+     */
+    disableTouchControls() {
+        this.touch.disable();
+    }
+    
+    /**
+     * Show touch start button
+     */
+    showTouchStartButton() {
+        this.touch.showStartButton();
+    }
+    
+    /**
+     * Hide touch start button
+     */
+    hideTouchStartButton() {
+        this.touch.hideStartButton();
+    }
+    
+    /**
+     * Check if using touch device
+     */
+    isTouchDevice() {
+        return this.touch.isTouch();
     }
     
     /**
