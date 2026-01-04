@@ -76,7 +76,6 @@ export class Arena {
         this.width = newWidth;
         this.height = newHeight;
     }
-    }
     
     /**
      * Get spawn positions for players
