@@ -43,6 +43,15 @@ export class Arena {
         this.suddenDeathStartTime = 12000; // Sudden death after 12 seconds (was 20s)
         this.suddenDeathShrinkSpeed = 5; // 5x faster shrinking (was 3x)
         this.suddenDeathForce = 0.15; // Strong force pushing players toward center (was 0.08)
+        
+        // Centrifuge tiebreaker mode
+        this.centrifugeMode = false;
+        this.centrifugeRadius = 0;
+        this.centrifugeRotation = 0;
+        this.centrifugeSpeed = 0;
+        this.centrifugeMaxSpeed = 0.004; // radians per ms
+        this.centrifugeForce = 0;
+        this.centrifugeMaxForce = 0.35;
     }
     
     /**
@@ -103,6 +112,9 @@ export class Arena {
      * Check if a position is outside the arena
      */
     isOutOfBounds(x, y, radius = 0) {
+        if (this.centrifugeMode) {
+            return this.isOutOfCentrifuge(x, y, radius);
+        }
         return (
             x - radius < this.bounds.left ||
             x + radius > this.bounds.right ||
@@ -115,6 +127,9 @@ export class Arena {
      * Check if player is completely outside (eliminated)
      */
     isEliminated(x, y, radius) {
+        if (this.centrifugeMode) {
+            return this.isEliminatedCentrifuge(x, y, radius);
+        }
         return (
             x + radius < this.bounds.left ||
             x - radius > this.bounds.right ||
@@ -156,6 +171,11 @@ export class Arena {
         this.isShrinking = false;
         this.shrinkWarningShown = false;
         this.suddenDeathActive = false;
+        // Reset centrifuge
+        this.centrifugeMode = false;
+        this.centrifugeRotation = 0;
+        this.centrifugeSpeed = 0;
+        this.centrifugeForce = 0;
         // Reset modifiers
         this.arenaScale = 1.0;
         this.shrinkSpeedMultiplier = 1.0;
@@ -188,6 +208,59 @@ export class Arena {
     }
     
     /**
+     * Activate centrifuge tiebreaker mode
+     */
+    activateCentrifuge() {
+        this.centrifugeMode = true;
+        this.centrifugeRadius = Math.min(this.width, this.height) * 0.45;
+        this.centrifugeRotation = 0;
+        this.centrifugeSpeed = 0;
+        this.centrifugeForce = 0;
+    }
+    
+    /**
+     * Check if a position is outside the circular centrifuge arena
+     */
+    isOutOfCentrifuge(x, y, radius = 0) {
+        if (!this.centrifugeMode) return false;
+        const dx = x - this.centerX;
+        const dy = y - this.centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        return dist + radius > this.centrifugeRadius;
+    }
+    
+    /**
+     * Check if player eliminated in centrifuge mode
+     */
+    isEliminatedCentrifuge(x, y, radius) {
+        if (!this.centrifugeMode) return false;
+        const dx = x - this.centerX;
+        const dy = y - this.centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        return dist - radius > this.centrifugeRadius;
+    }
+    
+    /**
+     * Get centrifugal force for a position (pushes outward from center based on rotation)
+     */
+    getCentrifugeForce(x, y) {
+        if (!this.centrifugeMode || this.centrifugeForce === 0) return { x: 0, y: 0 };
+        
+        const dx = x - this.centerX;
+        const dy = y - this.centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 10) return { x: 0, y: 0 };
+        
+        // Centrifugal force pushes outward, stronger further from center
+        const forceMagnitude = this.centrifugeForce * (dist / 100);
+        return {
+            x: (dx / dist) * forceMagnitude,
+            y: (dy / dist) * forceMagnitude
+        };
+    }
+    
+    /**
      * Get sudden death force vector toward center for a position
      */
     getSuddenDeathForce(x, y) {
@@ -217,6 +290,19 @@ export class Arena {
         // Decay border glow
         this.borderGlow += (this.targetBorderGlow - this.borderGlow) * 0.1;
         this.targetBorderGlow *= 0.95;
+        
+        // Update centrifuge mode
+        if (this.centrifugeMode && isPlaying) {
+            // Gradually increase rotation speed
+            this.centrifugeSpeed = Math.min(this.centrifugeSpeed + 0.000005 * deltaTime, this.centrifugeMaxSpeed);
+            this.centrifugeRotation += this.centrifugeSpeed * deltaTime;
+            
+            // Gradually increase centrifugal force
+            this.centrifugeForce = Math.min(this.centrifugeForce + 0.0001 * deltaTime, this.centrifugeMaxForce);
+            
+            // Slowly shrink the centrifuge radius
+            this.centrifugeRadius = Math.max(80, this.centrifugeRadius - 0.015 * deltaTime);
+        }
         
         // Update round time and shrinking only when playing
         if (isPlaying) {
@@ -257,22 +343,112 @@ export class Arena {
         // Draw outer area (out of bounds)
         this.renderOutOfBounds(ctx);
         
-        // Draw background
-        this.renderBackground(ctx);
+        if (this.centrifugeMode) {
+            // Render circular spinning arena
+            this.renderCentrifugeArena(ctx);
+        } else {
+            // Draw background
+            this.renderBackground(ctx);
+            
+            // Draw danger zone gradient (edge warning)
+            this.renderDangerZone(ctx);
+            
+            // Draw shrinking warning
+            if (this.isShrinking) {
+                this.renderShrinkingEffect(ctx);
+            }
+            
+            // Draw border (sharp corners for aggressive look)
+            this.renderBorder(ctx);
+            
+            // Draw corner markers (impact points)
+            this.renderCornerMarkers(ctx);
+        }
+    }
+    
+    /**
+     * Render centrifuge arena (circular spinning arena)
+     */
+    renderCentrifugeArena(ctx) {
+        ctx.save();
         
-        // Draw danger zone gradient (edge warning)
-        this.renderDangerZone(ctx);
+        // Translate to center for rotation
+        ctx.translate(this.centerX, this.centerY);
+        ctx.rotate(this.centrifugeRotation);
         
-        // Draw shrinking warning
-        if (this.isShrinking) {
-            this.renderShrinkingEffect(ctx);
+        // Draw circular arena background
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.centrifugeRadius);
+        gradient.addColorStop(0, '#1a3a1a');
+        gradient.addColorStop(0.3, '#152515');
+        gradient.addColorStop(0.7, '#102010');
+        gradient.addColorStop(1, '#0a150a');
+        
+        ctx.beginPath();
+        ctx.arc(0, 0, this.centrifugeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Draw spinning pattern lines (radial)
+        const numLines = 12;
+        const pulseAlpha = 0.3 + Math.sin(this.pulsePhase * 4) * 0.1;
+        ctx.strokeStyle = `rgba(100, 255, 100, ${pulseAlpha})`;
+        ctx.lineWidth = 2;
+        
+        for (let i = 0; i < numLines; i++) {
+            const angle = (i / numLines) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * this.centrifugeRadius, Math.sin(angle) * this.centrifugeRadius);
+            ctx.stroke();
         }
         
-        // Draw border (sharp corners for aggressive look)
-        this.renderBorder(ctx);
+        // Draw concentric rings
+        const numRings = 4;
+        for (let i = 1; i <= numRings; i++) {
+            ctx.beginPath();
+            ctx.arc(0, 0, (this.centrifugeRadius / numRings) * i, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(100, 255, 100, ${0.1 + i * 0.05})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
         
-        // Draw corner markers (impact points)
-        this.renderCornerMarkers(ctx);
+        ctx.restore();
+        
+        // Draw non-rotating elements
+        // Safe zone indicator in center
+        const safeZoneRadius = 60;
+        const safeGlow = 0.4 + Math.sin(this.pulsePhase * 3) * 0.2;
+        
+        ctx.beginPath();
+        ctx.arc(this.centerX, this.centerY, safeZoneRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(100, 255, 100, ${safeGlow * 0.2})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(100, 255, 100, ${safeGlow})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Draw outer border (glowing)
+        ctx.beginPath();
+        ctx.arc(this.centerX, this.centerY, this.centrifugeRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = '#44ff44';
+        ctx.lineWidth = 4;
+        ctx.shadowColor = '#44ff44';
+        ctx.shadowBlur = 20 + Math.sin(this.pulsePhase * 6) * 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        // Warning text
+        const textPulse = 1 + Math.sin(this.pulsePhase * 8) * 0.1;
+        ctx.textAlign = 'center';
+        ctx.font = `bold ${Math.floor(24 * textPulse)}px Arial`;
+        ctx.fillStyle = '#44ff44';
+        ctx.shadowColor = '#44ff44';
+        ctx.shadowBlur = 15;
+        ctx.fillText('🌀 CENTRIFUGE MODE 🌀', this.centerX, this.centerY - this.centrifugeRadius - 20);
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#88ff88';
+        ctx.fillText('STAY IN THE CENTER!', this.centerX, this.centerY - this.centrifugeRadius - 45);
+        ctx.shadowBlur = 0;
     }
     
     /**

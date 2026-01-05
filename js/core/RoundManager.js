@@ -26,6 +26,9 @@ export class RoundManager {
         this.finalCountdownActive = false;
         this.finalCountdownTime = 0;
         
+        // Centrifuge tiebreaker state
+        this.centrifugeActive = false;
+        
         // Callbacks
         this.onCountdownTick = null;
         this.onRoundStart = null;
@@ -34,6 +37,7 @@ export class RoundManager {
         this.onModifierAnnounce = null;
         this.onFinalCountdown = null;
         this.onEscalation = null;
+        this.onCentrifugeStart = null;
     }
     
     /**
@@ -73,6 +77,7 @@ export class RoundManager {
         this.instabilityActive = false;
         this.finalCountdownActive = false;
         this.finalCountdownTime = 0;
+        this.centrifugeActive = false;
         
         // Pick modifier for this round (not first round - let players warm up)
         if (this.currentRound >= 1) {
@@ -228,7 +233,7 @@ export class RoundManager {
     }
     
     /**
-     * Force round to end - pick winner based on arena position
+     * Force round to end - trigger centrifuge tiebreaker if multiple alive
      */
     forceRoundEnd(players) {
         const alivePlayers = players.filter(p => p.isAlive);
@@ -236,42 +241,27 @@ export class RoundManager {
         if (alivePlayers.length === 0) {
             // All dead - no winner
             this.roundWinner = null;
+            this.state = 'roundEnd';
+            this.roundEndTimer = CONFIG.ROUNDS.ROUND_END_DELAY;
+            if (this.onRoundEnd) {
+                this.onRoundEnd(this.roundWinner, this.currentRound, 'timeout');
+            }
         } else if (alivePlayers.length === 1) {
             // Single survivor
             this.roundWinner = alivePlayers[0];
-        } else {
-            // Multiple alive - player closest to center survives, eliminate others
-            let closestPlayer = null;
-            let closestDist = Infinity;
-            
-            for (const player of alivePlayers) {
-                // Distance from center (will be calculated by game)
-                const dist = player.distanceFromCenter || 0;
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestPlayer = player;
-                }
-            }
-            
-            // Eliminate all except closest
-            for (const player of alivePlayers) {
-                if (player !== closestPlayer) {
-                    player.eliminate();
-                }
-            }
-            
-            this.roundWinner = closestPlayer;
-        }
-        
-        if (this.roundWinner) {
             this.roundWinner.addWin();
-        }
-        
-        this.state = 'roundEnd';
-        this.roundEndTimer = CONFIG.ROUNDS.ROUND_END_DELAY;
-        
-        if (this.onRoundEnd) {
-            this.onRoundEnd(this.roundWinner, this.currentRound, 'timeout');
+            this.state = 'roundEnd';
+            this.roundEndTimer = CONFIG.ROUNDS.ROUND_END_DELAY;
+            if (this.onRoundEnd) {
+                this.onRoundEnd(this.roundWinner, this.currentRound, 'timeout');
+            }
+        } else {
+            // Multiple alive - trigger centrifuge tiebreaker!
+            this.centrifugeActive = true;
+            this.finalCountdownActive = false; // Stop the countdown
+            if (this.onCentrifugeStart) {
+                this.onCentrifugeStart();
+            }
         }
     }
     

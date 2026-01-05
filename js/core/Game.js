@@ -163,6 +163,22 @@ export class Game {
             }
         };
         
+        this.roundManager.onCentrifugeStart = () => {
+            // Activate centrifuge mode in arena
+            this.arena.activateCentrifuge();
+            this.ui.hideFinalCountdown();
+            this.screenEffects.flash('#44ff44', 0.4);
+            this.screenEffects.shake(15, 400);
+            
+            // Burst of green particles
+            this.particles.burst(
+                this.arena.centerX,
+                this.arena.centerY,
+                50,
+                { color: '#44ff44', size: 8, speed: 12 }
+            );
+        };
+        
         this.roundManager.onRoundEnd = (winner, round, reason) => {
             this.ui.showRoundWinner(winner, round, this.playerCount, reason);
             this.ui.updateScoreboard(this.players);
@@ -471,8 +487,23 @@ export class Game {
                 Math.pow(player.position.y - this.arena.centerY, 2)
             );
             
+            // Apply centrifuge force (pushes players outward from spinning)
+            if (player.isAlive && this.arena.centrifugeMode) {
+                const force = this.arena.getCentrifugeForce(player.position.x, player.position.y);
+                player.velocity.x += force.x;
+                player.velocity.y += force.y;
+                
+                // Centrifuge spark particles
+                if (Math.random() < 0.25) {
+                    this.particles.trail(player.position.x, player.position.y, {
+                        color: '#44ff44',
+                        size: 4
+                    });
+                }
+            }
+            
             // Apply sudden death force - pushes players toward center
-            if (player.isAlive && this.arena.suddenDeathActive) {
+            if (player.isAlive && this.arena.suddenDeathActive && !this.arena.centrifugeMode) {
                 const force = this.arena.getSuddenDeathForce(player.position.x, player.position.y);
                 player.velocity.x += force.x;
                 player.velocity.y += force.y;
